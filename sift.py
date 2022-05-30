@@ -6,8 +6,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Read in Images 
-img1 = cv2.imread('data/puzzle2_1.jpg',0)       # puzzle piece
-img2 = cv2.imread('data/puzzle2_template.jpg',0)        # puzzle template
+img1 = cv2.imread('puzzle_data/puzzle2_1.jpg',0)       # puzzle piece
+img2 = cv2.imread('puzzle_data/puzzle2_template.jpg',0)        # puzzle template
 # -> using flag 0 in imread() method to read image as greyscale picutre
 
 # SIFT Detector: 
