@@ -5,17 +5,18 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-# Read in Images 
-img1 = cv2.imread('puzzle_data/puzzle2_1.jpg',0)       # puzzle piece
-img2 = cv2.imread('puzzle_data/puzzle2_template.jpg',0)        # puzzle template
-# -> using flag 0 in imread() method to read image as greyscale picutre
+# Read in Images  
+piece_img_bgr = cv2.imread('puzzle_data/Puzzle_Piece_Feuerwehr.jpg')       # puzzle piece
+template_img_bgr = cv2.imread('puzzle_data/Puzzle_Template_Feuerwehr.jpg')        # puzzle template
+piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle piece grayscale
+template_img_gray = cv2.cvtColor(template_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle template grayscale
 
 # SIFT Detector: 
 sift = cv2.SIFT_create() # initialize SIFT
 
 # Using sift for detecting and computing keypoints(kp) and descriptors(des)
-kp1, des1 = sift.detectAndCompute(img1,None) 
-kp2, des2 = sift.detectAndCompute(img2,None)
+keypoints1, des1 = sift.detectAndCompute(piece_img_gray,None) 
+keypoints2, des2 = sift.detectAndCompute(template_img_gray,None)
 
 #FLANN -> Fast Library for Approximate Nearest Neighbors
 
@@ -39,26 +40,26 @@ MIN_MATCH_COUNT = 5
 
 # get matches
 if len(good)>MIN_MATCH_COUNT:
-    src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+    src_pts = np.float32([ keypoints1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+    dst_pts = np.float32([ keypoints2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
     matchesMask = mask.ravel().tolist()
-    h,w = img1.shape
+    h,w = piece_img_gray.shape
     pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
     dst = cv2.perspectiveTransform(pts,M)
-    img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+    template_img_gray = cv2.polylines(template_img_gray,[np.int32(dst)],True,255,3, cv2.LINE_AA)
 else:
-    print( "Not enough matches are found - {}/{}".format(len(good), MIN_MATCH_COUNT) )
+    print( "Not enough matches are found: {}/{}".format(len(good), MIN_MATCH_COUNT) )
     matchesMask = None
 
 # draw matches on canvas
-draw_params = dict(matchColor = (255,255,0),      # set color as (RGB)
+draw_params = dict(matchColor = None,
                    singlePointColor = None,
                    matchesMask = matchesMask,   # sorting out inliners
-                   flags = 2)
+                   flags = cv2.DRAW_MATCHES_FLAGS_DEFAULT)
 
 # picture with all the matches printed 
-# output final picturers              
-img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
-plt.imshow(img3, 'gray')
+# output final picturers       
+result_img = cv2.drawMatches(piece_img_bgr,keypoints1,template_img_bgr,keypoints2,good,None,**draw_params)
+plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
 plt.show()
