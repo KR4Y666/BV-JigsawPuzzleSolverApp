@@ -1,14 +1,17 @@
-# First Version for Puzzle Solver using Sift Algorithm and OpenCV
-
 # Imports
+from os import remove
 import cv2 
 import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
+from remove_background import remove_background_of
 
 # Read in Images  
-piece_img_bgr = cv2.imread('puzzle_data/Puzzle_Piece_Feuerwehr.jpg')       # puzzle piece
-template_img_bgr = cv2.imread('puzzle_data/Puzzle_Template_Feuerwehr.jpg')        # puzzle template
+piece_img_path = 'puzzle_data/Puzzle_Piece_Feuerwehr.jpg'
+template_img_path = 'puzzle_data/Puzzle_Template_Feuerwehr.jpg'
+piece_img_bgr = cv2.imread(piece_img_path)       # puzzle piece
+piece_img_bgr = remove_background_of(piece_img_bgr)
+template_img_bgr = cv2.imread(template_img_path) # puzzle template
 piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)
 
 #Split images in color channels
@@ -112,13 +115,16 @@ mean_x_red = result_sift_red[0]
 mean_y_red = result_sift_red[1]
 mean_x = int((mean_x_blue + mean_x_green + mean_x_red)/3)
 mean_y = int((mean_y_blue + mean_y_green + mean_y_red)/3)
-print(mean_x, mean_y)
+#print(mean_x, mean_y)
 
 #show piece at its mean coordinates on the puzzle template
-im1 = Image.open('puzzle_data/Puzzle_Piece_Feuerwehr.jpg')
-im2 = Image.open('puzzle_data/Puzzle_Template_Feuerwehr.jpg')
+im1 = Image.open(piece_img_path)
+im2 = Image.open(template_img_path)
 back_im = im2.copy()
-im1 = im1.resize((400,400)) #TODO image resizing
+im1 = remove_background_of(np.array(im1))
+im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
+im1 = Image.fromarray(im1)
+im1 = im1.resize((500,500)) #TODO image resizing
 back_im.paste(im1, (mean_x, mean_y))
 plt.imshow(back_im)
 plt.show()
