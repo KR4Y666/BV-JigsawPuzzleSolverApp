@@ -5,13 +5,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
 from remove_background import remove_background_of
+import math
+from piece_segmentation_via_contours import crop_image
 
 # Read in Images  
-piece_img_path = 'puzzle_data/Puzzle_Piece_Feuerwehr.jpg'
-template_img_path = 'puzzle_data/Puzzle_Template_Feuerwehr.jpg'
-piece_img_bgr = cv2.imread(piece_img_path)       # puzzle piece
-piece_img_bgr = remove_background_of(piece_img_bgr)
-template_img_bgr = cv2.imread(template_img_path) # puzzle template
+piece_img_path = 'puzzle_data/puzzle1_2.jpg'
+template_img_path = 'puzzle_data/puzzle1_template.jpg'
+piece_img_bgr = cv2.imread(piece_img_path)      
+template_img_bgr = cv2.imread(template_img_path) 
+piece_img_bgr = crop_image(piece_img_bgr)    
+template_img_bgr = crop_image(template_img_bgr)
 piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)
 
 #Split images in color channels
@@ -45,19 +48,57 @@ def sift_algorithm(piece, template, color):
     good = []
     x_coordinate = []
     y_coordinate = []
+    start = []
+    target = []
     for m,n in matches:
         if m.distance < 0.7*n.distance:
             good.append(m)
             pt1 = kp1[m.queryIdx].pt
             pt2 = kp2[m.trainIdx].pt
+            start.append(pt1)
+            target.append(pt2)
             start_x = pt1[0]
             start_y = pt1[1]
             target_x = pt2[0]
             target_y = pt2[1]
             x_coordinate.append(target_x)
             y_coordinate.append(target_y)
-    mean_x = sum(x_coordinate)/len(x_coordinate)
-    mean_y = sum(y_coordinate)/len(y_coordinate)
+
+    #---------------------------------------------------------------
+    L = math.inf
+    n = 0
+    delta = 5
+
+    while L > len(target):
+
+        target = np.array(target)
+
+        L = len(target)
+
+        points2 = []
+
+        for i in range(len(target)):
+
+            pt = target[i]
+            d = (pt[0]-target[:,0])**2.+(pt[1]-target[:,1])**2.
+            pts = target[d<delta**2.]
+
+            x = np.average(pts[:,0])
+            y = np.average(pts[:,1])
+
+            points2 += [[x,y]]
+
+        points2 = np.array(points2)
+        target = np.unique(points2,axis=0)
+        print(len(target))
+
+    mean = sum(target)/len(target)
+    mean_x = mean[0]
+    mean_y = mean[1]
+    #---------------------------------------------------------------
+
+    #mean_x = sum(x_coordinate)/len(x_coordinate)
+    #mean_y = sum(y_coordinate)/len(y_coordinate)
 
     # Set Match Treshholds
     MIN_MATCH_COUNT = 10
@@ -102,10 +143,6 @@ result_img_red = result_img_red[:,:,2]
 #merge color channels
 result_img = cv2.merge([result_img_blue, result_img_green, result_img_red])
 
-#show final image (converted to RGB)
-#plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
-#plt.show()
-
 #calculate mean coordinates of piece in template
 mean_x_blue = result_sift_blue[0]
 mean_y_blue = result_sift_blue[1]
@@ -121,10 +158,13 @@ mean_y = int((mean_y_blue + mean_y_green + mean_y_red)/3)
 im1 = Image.open(piece_img_path)
 im2 = Image.open(template_img_path)
 back_im = im2.copy()
-im1 = remove_background_of(np.array(im1))
+im1 = np.array(im1)
+im1 = crop_image(im1)
+# im1 = remove_background_of(np.array(im1))
 im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
 im1 = Image.fromarray(im1)
-im1 = im1.resize((500,500)) #TODO image resizing
+im1 = im1.resize((500,500)) 
+#TODO image resizing
 back_im.paste(im1, (mean_x, mean_y))
 plt.imshow(back_im)
 plt.show()

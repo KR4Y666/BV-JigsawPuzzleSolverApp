@@ -4,10 +4,11 @@
 import cv2 
 import numpy as np
 from matplotlib import pyplot as plt
+import math
 
 # Read in Images  
-piece_img_bgr = cv2.imread('puzzle_data/Puzzle_Piece_Feuerwehr.jpg')       # puzzle piece
-template_img_bgr = cv2.imread('puzzle_data/Puzzle_Template_Feuerwehr.jpg')        # puzzle template
+piece_img_bgr = cv2.imread('puzzle_data/Puzzle_Piece_Eisbaer.jpg')       # puzzle piece
+template_img_bgr = cv2.imread('puzzle_data/Puzzle_Template_Eisbaer.jpg')        # puzzle template
 piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle piece grayscale
 template_img_gray = cv2.cvtColor(template_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle template grayscale
 
@@ -31,9 +32,42 @@ matches = flann.knnMatch(des1,des2,k=2)
 
 # sorting out good matches and storing them
 good = []
+start = []
+target = []
 for m,n in matches:
     if m.distance < 0.7*n.distance:
         good.append(m)
+        start.append(keypoints1[m.queryIdx].pt)
+        target.append(keypoints2[m.trainIdx].pt)
+
+#print(target)
+
+L = math.inf
+n = 0
+delta = 5
+
+while L > len(target):
+
+    target = np.array(target)
+
+    L = len(target)
+
+    points2 = []
+
+    for i in range(len(target)):
+
+        pt = target[i]
+        d = (pt[0]-target[:,0])**2.+(pt[1]-target[:,1])**2.
+        pts = target[d<delta**2.]
+
+        x = np.average(pts[:,0])
+        y = np.average(pts[:,1])
+
+        points2 += [[x,y]]
+
+    points2 = np.array(points2)
+    target = np.unique(points2,axis=0)
+    print(len(target))
 
 # Set Match Treshholds
 MIN_MATCH_COUNT = 5
