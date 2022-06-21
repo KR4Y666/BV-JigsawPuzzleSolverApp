@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
-from remove_background import remove_background_of
 import math
 
 # given the puzzle template and the number of pieces in the template, calculate 
@@ -192,9 +191,9 @@ def improved_sift(object, template):
 
 
 # read in images
-puzzle_piece_img_path = 'puzzle_data/puzzle4_2.jpg'
-puzzle_template_img_path = 'puzzle_data/puzzle4_template.jpg'
-pieces_img_path = 'puzzle_data\puzzle4_pieces.jpg'
+puzzle_piece_img_path = './puzzle_data/puzzle4_2.jpg'
+puzzle_template_img_path = './puzzle_data/puzzle4_template.jpg'
+pieces_img_path = './puzzle_data/puzzle4_pieces.jpg'
 puzzle_piece_img = crop_image(cv2.imread(puzzle_piece_img_path))   
 puzzle_template_img = crop_image(cv2.imread(puzzle_template_img_path)) 
 pieces_img = cv2.cvtColor(cv2.imread(pieces_img_path), cv2.COLOR_BGR2RGB)

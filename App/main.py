@@ -17,6 +17,8 @@ from kivy.graphics.texture import Texture
 #import cv2 
 #import os 
 
+Builder.load_file('button_style.kv')
+
 # Define Welcome Screen
 class welcome_screen(GridLayout):
     def __init__(self, **kwargs):
@@ -101,6 +103,8 @@ class result_screen(GridLayout):
 
         self.result_button = Button(text='Yo hat funktioniert')
         self.add_widget(self.result_button)
+
+        
 
 # Define Main Class with screen manager
 class puzzle_solver(App): 
