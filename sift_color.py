@@ -7,11 +7,12 @@ from PIL import Image
 from remove_background import remove_background_of
 import math
 from piece_segmentation_via_contours import crop_image
+from piece_sice import calculate_piece_size
 
 # Read in Images  
-piece_img_path = 'puzzle_data/puzzle1_2.jpg'
-template_img_path = 'puzzle_data/puzzle1_template.jpg'
-piece_img_bgr = cv2.imread(piece_img_path)      
+piece_img_path = 'puzzle_data/Puzzle4_2.jpg'
+template_img_path = 'puzzle_data/Puzzle4_template.jpg'
+piece_img_bgr = cv2.imread(piece_img_path)     
 template_img_bgr = cv2.imread(template_img_path) 
 piece_img_bgr = crop_image(piece_img_bgr)    
 template_img_bgr = crop_image(template_img_bgr)
@@ -64,7 +65,8 @@ def sift_algorithm(piece, template, color):
             x_coordinate.append(target_x)
             y_coordinate.append(target_y)
 
-    #---------------------------------------------------------------
+
+    # Remove outliers
     L = math.inf
     n = 0
     delta = 5
@@ -95,10 +97,6 @@ def sift_algorithm(piece, template, color):
     mean = sum(target)/len(target)
     mean_x = mean[0]
     mean_y = mean[1]
-    #---------------------------------------------------------------
-
-    #mean_x = sum(x_coordinate)/len(x_coordinate)
-    #mean_y = sum(y_coordinate)/len(y_coordinate)
 
     # Set Match Treshholds
     MIN_MATCH_COUNT = 10
@@ -154,6 +152,7 @@ mean_x = int((mean_x_blue + mean_x_green + mean_x_red)/3)
 mean_y = int((mean_y_blue + mean_y_green + mean_y_red)/3)
 #print(mean_x, mean_y)
 
+
 #show piece at its mean coordinates on the puzzle template
 im1 = Image.open(piece_img_path)
 im2 = Image.open(template_img_path)
@@ -163,8 +162,8 @@ im1 = crop_image(im1)
 # im1 = remove_background_of(np.array(im1))
 im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
 im1 = Image.fromarray(im1)
-im1 = im1.resize((500,500)) 
-#TODO image resizing
+piece_width, piece_height = calculate_piece_size(im2, 100)  #calculate piece size
+im1 = im1.resize((piece_width, piece_height))   #resize image
 back_im.paste(im1, (mean_x, mean_y))
 plt.imshow(back_im)
 plt.show()
