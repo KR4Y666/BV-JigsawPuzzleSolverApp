@@ -1,9 +1,10 @@
 
-#ignore .venv folder
+#ignore virtual environments
 .venv
+kivy_venv
 
 #ignore _pycache_ folder
 __pycache__
 
-#ignore image produced by remove_background
-bg.jpg
+#ignore node_modules
+node_modules

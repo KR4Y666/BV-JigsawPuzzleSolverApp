@@ -4,10 +4,12 @@
 import cv2 
 import numpy as np
 from matplotlib import pyplot as plt
+import math
+from PIL import Image
 
 # Read in Images  
-piece_img_bgr = cv2.imread('puzzle_data/Puzzle_Piece_Feuerwehr.jpg')       # puzzle piece
-template_img_bgr = cv2.imread('puzzle_data/Puzzle_Template_Feuerwehr.jpg')        # puzzle template
+piece_img_bgr = cv2.imread('./puzzle_data/Puzzle4_2.jpg')       # puzzle piece
+template_img_bgr = cv2.imread('./puzzle_data/Puzzle4_Template.jpg')        # puzzle template
 piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle piece grayscale
 template_img_gray = cv2.cvtColor(template_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle template grayscale
 
@@ -31,9 +33,27 @@ matches = flann.knnMatch(des1,des2,k=2)
 
 # sorting out good matches and storing them
 good = []
+start = []
+target = []
+x_coordinate = []
+y_coordinate = []
 for m,n in matches:
     if m.distance < 0.7*n.distance:
         good.append(m)
+        pt1 = keypoints1[m.queryIdx].pt
+        pt2 = keypoints2[m.trainIdx].pt
+        start.append(pt1)
+        target.append(pt2)
+        start_x = pt1[0]
+        start_y = pt1[1]
+        target_x = pt2[0]
+        target_y = pt2[1]
+        x_coordinate.append(target_x)
+        y_coordinate.append(target_y)
+
+
+mean_x = int(sum(x_coordinate)/len(x_coordinate))
+mean_y = int(sum(y_coordinate)/len(y_coordinate))
 
 # Set Match Treshholds
 MIN_MATCH_COUNT = 5
@@ -57,6 +77,24 @@ draw_params = dict(matchColor = None,
                    singlePointColor = None,
                    matchesMask = matchesMask,   # sorting out inliners
                    flags = cv2.DRAW_MATCHES_FLAGS_DEFAULT)
+
+
+# #show piece at its mean coordinates on the puzzle template
+# piece_img_path = './puzzle_data/Puzzle4_2.jpg'
+# template_img_path = './puzzle_data/Puzzle4_template.jpg'
+
+# im1 = Image.open(piece_img_path)
+# im2 = Image.open(template_img_path)
+# back_im = im2.copy()
+# im1 = np.array(im1)
+# #im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
+# im1 = Image.fromarray(im1)
+# im1 = im1.resize((500,500)) 
+# #TODO image resizing
+# back_im.paste(im1, (mean_x, mean_y))
+# plt.imshow(back_im)
+# plt.show()
+
 
 # picture with all the matches printed 
 # output final picturers       
