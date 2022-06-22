@@ -57,6 +57,36 @@ def crop_image(image):
     return cropped
 
 
+def remove_outliers(points):
+    L = math.inf
+    n = 0
+    delta = 5
+
+    while L > len(points):
+
+        points = np.array(points)
+
+        L = len(points)
+
+        points2 = []
+
+        for i in range(len(points)):
+
+            pt = points[i]
+            d = (pt[0]-points[:,0])**2.+(pt[1]-points[:,1])**2.
+            pts = points[d<delta**2.]
+
+            x = np.average(pts[:,0])
+            y = np.average(pts[:,1])
+
+            points2 += [[x,y]]
+
+        points2 = np.array(points2)
+        points = np.unique(points2,axis=0)
+    
+    return points
+
+
 # apply SIFT algorithm to a certain color channel
 def sift_algorithm(object, template, color):
 
@@ -96,35 +126,20 @@ def sift_algorithm(object, template, color):
 
 
     # remove outliers
-    L = math.inf
-    n = 0
-    delta = 5
+    start = remove_outliers(start)
+    target = remove_outliers(target)
 
-    while L > len(target):
+    mean_start = sum(start)/len(start)
+    mean_start_x = mean_start[0]
+    mean_start_y = mean_start[1]
 
-        target = np.array(target)
+    mean_target = sum(target)/len(target)
+    mean_target_x = mean_target[0]
+    mean_target_y = mean_target[1]
 
-        L = len(target)
+    #mean_x = sum(x_coordinate)/len(x_coordinate)
+    #mean_y = sum(y_coordinate)/len(y_coordinate)
 
-        points2 = []
-
-        for i in range(len(target)):
-
-            pt = target[i]
-            d = (pt[0]-target[:,0])**2.+(pt[1]-target[:,1])**2.
-            pts = target[d<delta**2.]
-
-            x = np.average(pts[:,0])
-            y = np.average(pts[:,1])
-
-            points2 += [[x,y]]
-
-        points2 = np.array(points2)
-        target = np.unique(points2,axis=0)
-
-    mean = sum(target)/len(target)
-    mean_x = mean[0]
-    mean_y = mean[1]
 
     # Set Match Treshholds
     MIN_MATCH_COUNT = 10
@@ -150,7 +165,7 @@ def sift_algorithm(object, template, color):
                     flags = cv2.DRAW_MATCHES_FLAGS_DEFAULT)
 
     # picture with all the matches printed      
-    return mean_x, mean_y, cv2.drawMatches(object,kp1,template,kp2,good,None,**draw_params)
+    return mean_start_x, mean_start_y, mean_target_x, mean_target_y, cv2.drawMatches(object,kp1,template,kp2,good,None,**draw_params)
 
 
 # apply improved SIFT algorithm
@@ -169,32 +184,42 @@ def improved_sift(object, template):
     result_sift_green = sift_algorithm(object_img_green, template_img_green, (0,255,0))
     result_sift_red = sift_algorithm(object_img_red, template_img_red, (0,0,255))
 
-    result_img_blue = result_sift_blue[2]
-    result_img_green = result_sift_green[2]
-    result_img_red = result_sift_red[2]
+    result_img_blue = result_sift_blue[4]
+    result_img_green = result_sift_green[4]
+    result_img_red = result_sift_red[4]
 
     result_img_blue = result_img_blue[:,:,0]
     result_img_green = result_img_green[:,:,1]
     result_img_red = result_img_red[:,:,2]
 
     #calculate mean coordinates of piece in template
-    mean_x_blue = result_sift_blue[0]
-    mean_y_blue = result_sift_blue[1]
-    mean_x_green = result_sift_green[0]
-    mean_y_green = result_sift_green[1]
-    mean_x_red = result_sift_red[0]
-    mean_y_red = result_sift_red[1]
-    mean_x = int((mean_x_blue + mean_x_green + mean_x_red)/3)
-    mean_y = int((mean_y_blue + mean_y_green + mean_y_red)/3)
+    mean_start_x_blue = result_sift_blue[0]
+    mean_start_y_blue = result_sift_blue[1]
+    mean_start_x_green = result_sift_green[0]
+    mean_start_y_green = result_sift_green[1]
+    mean_start_x_red = result_sift_red[0]
+    mean_start_y_red = result_sift_red[1]
+    mean_start_x = int((mean_start_x_blue + mean_start_x_green + mean_start_x_red)/3)
+    mean_start_y = int((mean_start_y_blue + mean_start_y_green + mean_start_y_red)/3)
 
-    return mean_x, mean_y, cv2.merge([result_img_blue, result_img_green, result_img_red])
+    mean_target_x_blue = result_sift_blue[2]
+    mean_target_y_blue = result_sift_blue[3]
+    mean_target_x_green = result_sift_green[2]
+    mean_target_y_green = result_sift_green[3]
+    mean_target_x_red = result_sift_red[2]
+    mean_target_y_red = result_sift_red[3]
+    mean_target_x = int((mean_target_x_blue + mean_target_x_green + mean_target_x_red)/3)
+    mean_target_y = int((mean_target_y_blue + mean_target_y_green + mean_target_y_red)/3)
+
+    return mean_start_x, mean_start_y, mean_target_x, mean_target_y, cv2.merge([result_img_blue, result_img_green, result_img_red])
 
 
 # read in images
 puzzle_piece_img_path = './puzzle_data/puzzle4_2.jpg'
 puzzle_template_img_path = './puzzle_data/puzzle4_template.jpg'
 pieces_img_path = './puzzle_data/puzzle4_pieces.jpg'
-puzzle_piece_img = crop_image(cv2.imread(puzzle_piece_img_path))   
+puzzle_piece_img = cv2.imread(puzzle_piece_img_path)
+#puzzle_piece_img_cropped = crop_image(cv2.imread(puzzle_piece_img_path))   
 puzzle_template_img = crop_image(cv2.imread(puzzle_template_img_path)) 
 pieces_img = cv2.cvtColor(cv2.imread(pieces_img_path), cv2.COLOR_BGR2RGB)
 
@@ -203,22 +228,32 @@ pieces_img = cv2.cvtColor(cv2.imread(pieces_img_path), cv2.COLOR_BGR2RGB)
 # and move the puzzle piece to this position on the puzzle template
 def search_position(piece, template, number_of_pieces):
 
-    piece_PIL = Image.fromarray(np.asarray(piece))
+    cropped_piece = crop_image(piece)
+    cropped_piece_PIL = Image.fromarray(np.asarray(cropped_piece))
+    original_piece_PIL = Image.fromarray(np.asarray(piece))
     template_PIL = Image.fromarray(np.asarray(template))
 
     # calculate piece size
-    piece_width, piece_height = calculate_piece_size(template_PIL, number_of_pieces)
+    cropped_piece_width, cropped_piece_height = calculate_piece_size(template_PIL, number_of_pieces)
+    original_piece_width, original_piece_height = original_piece_PIL.size
     
     # calculate position of piece on template
-    x_coordinate, y_coordinate, result_img = improved_sift(piece, template) 
-    #print(x_coordinate, y_coordinate)
+    x_start, y_start, x_target, y_target, result_img = improved_sift(cropped_piece, template) 
 
     # resize piece
-    piece = piece_PIL.resize((piece_width, piece_height))
+    resize_width_factor = original_piece_width / cropped_piece_width
+    resize_height_factor = original_piece_height / cropped_piece_height
+    resize_factor = (resize_width_factor + resize_height_factor) / 2
+    new_piece_width = int(original_piece_width / resize_factor)
+    new_piece_height = int(original_piece_height / resize_factor)
+    cropped_piece = cropped_piece_PIL.resize((new_piece_width, new_piece_height))
+
+    x_start = int(x_start / resize_width_factor)
+    y_start = int(y_start / resize_height_factor)
 
     # place piece at its right position on template
     template_copy = template_PIL.copy()
-    template_copy.paste(piece, (x_coordinate, y_coordinate))
+    template_copy.paste(cropped_piece, (x_target-x_start, y_target-y_start))
 
     return template_copy
 
@@ -238,7 +273,7 @@ def search_piece(template, pieces, number_of_pieces):
     #cut out piece of template for which the puzzle piece should be found
     piece_of_template = template[0:piece_width, 0:piece_height]
 
-    return improved_sift(piece_of_template, pieces)[2]
+    return improved_sift(piece_of_template, pieces)[4]
 
 plt.imshow(search_piece(puzzle_template_img, pieces_img, 100))
 plt.show()

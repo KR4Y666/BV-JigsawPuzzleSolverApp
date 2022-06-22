@@ -79,25 +79,25 @@ draw_params = dict(matchColor = None,
                    flags = cv2.DRAW_MATCHES_FLAGS_DEFAULT)
 
 
-#show piece at its mean coordinates on the puzzle template
-piece_img_path = './puzzle_data/Puzzle4_2.jpg'
-template_img_path = './puzzle_data/Puzzle4_template.jpg'
+# #show piece at its mean coordinates on the puzzle template
+# piece_img_path = './puzzle_data/Puzzle4_2.jpg'
+# template_img_path = './puzzle_data/Puzzle4_template.jpg'
 
-im1 = Image.open(piece_img_path)
-im2 = Image.open(template_img_path)
-back_im = im2.copy()
-im1 = np.array(im1)
-#im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
-im1 = Image.fromarray(im1)
-im1 = im1.resize((500,500)) 
-#TODO image resizing
-back_im.paste(im1, (mean_x, mean_y))
-plt.imshow(back_im)
-plt.show()
+# im1 = Image.open(piece_img_path)
+# im2 = Image.open(template_img_path)
+# back_im = im2.copy()
+# im1 = np.array(im1)
+# #im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2RGB)
+# im1 = Image.fromarray(im1)
+# im1 = im1.resize((500,500)) 
+# #TODO image resizing
+# back_im.paste(im1, (mean_x, mean_y))
+# plt.imshow(back_im)
+# plt.show()
 
 
 # picture with all the matches printed 
 # output final picturers       
-#result_img = cv2.drawMatches(piece_img_bgr,keypoints1,template_img_bgr,keypoints2,good,None,**draw_params)
-#plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
-#plt.show()
+result_img = cv2.drawMatches(piece_img_bgr,keypoints1,template_img_bgr,keypoints2,good,None,**draw_params)
+plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
+plt.show()
