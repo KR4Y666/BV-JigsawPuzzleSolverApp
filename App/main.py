@@ -18,7 +18,6 @@ import time
 import cv2 
 import os 
 
-kivy.require('1.9.0')
 
 class MainWindow(Screen):
     pass
@@ -35,7 +34,7 @@ class FourthWindow(Screen):
 class WindowManager(ScreenManager):
     pass
 
-kv = Builder.load_file('cam.kv')
+kv = Builder.load_file('ui.kv')
 
 class PuzzleSolverApp(App):
     def build(self):
