@@ -1,0 +1,147 @@
+# init screen manager 
+WindowManager:
+    MainWindow:
+    SecondWindow:
+    ThirdWindow:
+    FourthWindow:
+
+# define classes for screens
+<MainWindow>:
+    name: 'main'
+    
+    # set layout option: float vs box vs grid
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        padding: 10
+        spacing: 10
+
+        # set text label
+        Label:
+            text: 'Puzzle Solver App'
+            bold: True
+            font_size: 40
+            size_hint: (0.6,0.7)
+            pos_hint: {'center_x': 0.5, 'center_y':0.5}
+
+        # set image
+        Image:
+            source: 'start.jpeg'
+
+        # set button with functionality
+        Button:
+            text: 'Start App'
+            bold: True
+            pos_hint: {'center_x':0.5, 'center_y':0.1}
+            size_hint: (0.7, 0.5)
+            background_color: (255, 0, 0, 1)
+            on_release: 
+                app.root.current = 'second'
+                root.manager.transition.direction = 'left'
+
+# set up camera class screen (capture image of canvas)
+<SecondWindow>:
+    name: 'second'
+
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        padding: 10
+        spacing: 10
+
+        Camera:
+            id: cam
+            play: True
+            pos_hint: {'x':0, 'y':0}
+            size_hint: 1, 1
+
+        Button:
+            text: 'Take Picture of Puzzle Canvas'
+            bold: True
+            background_color: (255,0,0,1)
+            size_hint: 0.3, 0.2
+            pos_hint: {'center_x':0.5, 'center_y':0}
+            on_press:
+                cam.export_to_png('canvas.png')
+            on_release:
+                app.root.current = 'third'
+                root.manager.transition.direction = 'left'
+
+        Button:
+            text: 'back'
+            bold: True
+            background_color: (255,0,0,1)
+            pos_hint: {'x':0, 'y':0}
+            size_hint: 0.1, 0.1
+            on_release: 
+                app.root.current = 'main'
+                root.manager.transition.direction = 'right'
+
+# set up camera class screen (capture image of canvas)
+<ThirdWindow>:
+    name: 'third'
+
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        padding: 10
+        spacing: 10
+
+        Camera:
+            id: cam
+            play: True
+            pos_hint: {'x':0, 'y':0}
+            size_hint: 1, 1
+
+        Button:
+            text: 'Take Picture of Puzzle Piece'
+            bold: True
+            background_color: (255,0,0,1)
+            size_hint: 0.3, 0.2
+            pos_hint: {'center_x':0.5, 'center_y':0}
+            on_press:
+                cam.export_to_png('piece.png')
+            on_release:
+                app.root.current = 'fourth'
+                root.manager.transition.direction = 'left'
+
+        Button:
+            text: 'back'
+            bold: True
+            background_color: (255,0,0,1)
+            pos_hint: {'x':0, 'y':0}
+            size_hint: 0.1, 0.1
+            on_release: 
+                app.root.current = 'second'
+                root.manager.transition.direction = 'right'
+
+# set up screen with Algorithms results
+<FourthWindow>: 
+    name: 'fourth'
+
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        padding: 10
+        spacing: 10
+
+    Label:
+        text: 'Hier nacher Ausgabe'
+        bold: True
+        font_size: 20
+        size_hint: (0.6,0.7)
+        pos_hint: {'center_x': 0.5, 'center_y':0.5}
+
+    Button:
+        text: 'Exit'
+        bold: True
+        background_color: (255,0,0,1)
+        pos_hint: {'x':0, 'y':0}
+        size_hint: 0.1, 0.1
+        on_press: 
+            app.stop()
+
+
+
+    
+
