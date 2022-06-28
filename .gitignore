@@ -8,3 +8,7 @@ __pycache__
 
 #ignore node_modules
 node_modules
+
+#ignore package.json-files
+package.json
+package-lock.json
