@@ -18,7 +18,6 @@ import time
 import cv2 
 import os 
 
-kivy.require('1.9.0')
 
 class MainWindow(Screen):
     pass
