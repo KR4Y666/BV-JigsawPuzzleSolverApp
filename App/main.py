@@ -35,7 +35,7 @@ class FourthWindow(Screen):
 class WindowManager(ScreenManager):
     pass
 
-kv = Builder.load_file('cam.kv')
+kv = Builder.load_file('ui.kv')
 
 class PuzzleSolverApp(App):
     def build(self):
