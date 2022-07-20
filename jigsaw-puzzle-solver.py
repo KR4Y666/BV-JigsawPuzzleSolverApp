@@ -34,42 +34,42 @@ import cv2
 # Preprocessing
 ###################################################################
 # Function to plot picture of results of the different steps
-# comment plot_result out, if plot of step not necessary or wanted
-# Maybe define sizes: plot_results(image, width = 10, height = 10)
+# comment plotResult out, if plot of step not necessary or wanted
+# Maybe define sizes: plotResults(image, width = 10, height = 10)
 # plt.figure(figsize = (width, height))
-def plot_results(image):
+def plotResults(image):
   plt.figure()
   plt.imshow(image, cmap='gray')
   plt.axis('off')
   plt.show()
 
-# Load image of Puzzle Pieces 
-# convert Picture to RGBA and to Numpay Array
+# Load image of puzzle pieces 
+# convert picture to RGBA and to Numpay Array
 # Using Pillow for opening and converting 
-puzzle_image = Image.open('puzzle4.png')
-puzzle_image = puzzle_image.convert('RGBA')
-puzzle = np.array(puzzle_image)
-# plot_results(puzzle)
+puzzleImage = Image.open('puzzle4.png')
+puzzleImage = puzzleImage.convert('RGBA')
+puzzle = np.array(puzzleImage)
+# plotResults(puzzle)
 
-# convert picture of puzzle into Grayscale image
-puzzle_gray = cv2.cvtColor(puzzle, cv2.COLOR_RGBA2GRAY)
+# convert picture of puzzle into grayscale image
+puzzleGray = cv2.cvtColor(puzzle, cv2.COLOR_RGBA2GRAY)
 
 # Apply opencvs adatipve thresholding technique
 # maybe add some finetuning here
-thresh = cv2.adaptiveThreshold(puzzle_gray, 255, 0, 1, 3, 3)
+threshold = cv2.adaptiveThreshold(puzzleGray, 255, 0, 1, 3, 3)
 
-# blur picuture a little Bit using gaussian blur 
-thresh = cv2.GaussianBlur(thresh, (3,3), 2)
+# blur picuture a little bit using gaussian blur 
+threshold = cv2.GaussianBlur(threshold, (3,3), 2)
 #plot_results(thresh)
 
 # compute contours of image using opencv findContours
-contours, _ = cv2.findContours(thresh, 0, 1)
+contours, _ = cv2.findContours(threshold, 0, 1)
 
 # draw and plot contours 
 fill = cv2.drawContours(np.zeros(puzzle.shape[:2]), contours, -1, 255, thickness=cv2.FILLED)
 #plot_results(fill)
 
-# smooth contours, using median filter from scipy package
+# smooth contours using median filter from scipy package
 # for different smoothings, adjust size = x 
 # changing size necessary for photos or screenshots ... 
 smooth = filters.median_filter(fill.astype('uint8'), size=12)
@@ -81,15 +81,15 @@ cv2.drawContours(smooth, trim_contours, -1, color=0, thickness=1)
 
 # compute single puzzle pieces from contours image 
 contours, _ = cv2.findContours(smooth, 0, 1)
-tiles, tile_centers = [], []
+pieces, pieceCenters = [], []
 for i in range(len(contours)):
   x, y, w, h = cv2.boundingRect(contours[i])
-  shape, tile = np.zeros(puzzle.shape[:2]), np.zeros((300,300,4), 'uint8')
+  shape, piece = np.zeros(puzzle.shape[:2]), np.zeros((300,300,4), 'uint8')
   cv2.drawContours(shape, [contours[i]], -1, color=1, thickness=-1)
   shape = (puzzle * shape[:,:,None])[y:y+h,x:x+w,:]
-  tile[(300-h)//2:(300-h)//2+h,(300-w)//2:(300-w)//2+w] = shape
-  tiles.append(tile)
-  tile_centers.append((h//2+y, w//2+x))
+  piece[(300-h)//2:(300-h)//2+h,(300-w)//2:(300-w)//2+w] = shape
+  pieces.append(piece)
+  pieceCenters.append((h//2+y, w//2+x))
 
 '''
 # show puzzle pieces in Figure 
@@ -108,14 +108,14 @@ plt.show()
 ###################################################################
 # Matching of Puzzle Pieces
 #################################################################
-# Rescale tiles to assembly format
-canvas_tiles = []
-for i in range(len(tiles)):
-  canvas_tile = np.zeros((1400,1400,4), 'uint8')
-  canvas_tile[550:850, 550:850] = tiles[i].copy()
-  canvas_tiles.append(canvas_tile)
+# Rescale pieces to assembly format
+canvasPieces = []
+for i in range(len(pieces)):
+  canvasPiece = np.zeros((1400,1400,4), 'uint8')
+  canvasPiece[550:850, 550:850] = pieces[i].copy()
+  canvasPieces.append(canvasPiece)
 
-
+# ???
 def getColors(image, subcontour):
   subcontour = np.flip(subcontour)
 
@@ -131,13 +131,15 @@ def getColors(image, subcontour):
   
   return colors.reshape(-1,3)
 
-def putOnAnvil(arr_img, point, angle, center=(700,700)):
+# move and rotate puzzle piece
+def positionPiece(arr_img, point, angle, center=(700,700)):
   img = Image.fromarray(arr_img)
   img = ImageChops.offset(img, center[1] - point[1], center[0] - point[0])
   img = img.rotate(angle)
 
   return np.array(img)
 
+# calculate the rotation point (import for moving and rotating puzzle piece)
 def rotatePoint(point, angle, center=(700,700)):
   dy, dx = center[0]-point[0], point[1]-center[1]
   distance = np.sqrt(np.square(point[0]-center[0]) + np.square(point[1]-center[1]))
@@ -149,7 +151,8 @@ def rotatePoint(point, angle, center=(700,700)):
 
   return (y,x)
 
-def reScale(point, position, center=(150,150)):
+# translate coordinates of puzzle piece image to coordinates of puzzle canvas
+def rescale(point, position, center=(150,150)):
   cy, cx, angle = position
   if angle!=0: (y, x) = rotatePoint(point, angle, center)
   else: (y, x) = point
@@ -157,10 +160,10 @@ def reScale(point, position, center=(150,150)):
   return (y + cy - center[0], x + cx - center[1])
 
 
-def matchTiles(A, B):
+def matchPieces(piece1, piece2):
 
-  LENGTH = 160
-  PRECISION = 7
+  length = 160
+  precision = 7
   STEP_A = 20
   STEP_B = 7
   MAX_FORM = 0.015
@@ -168,39 +171,39 @@ def matchTiles(A, B):
   MAX_PIXEL = 0.03
   MAX_FIT = 0.77
 
-  CENTER = round(LENGTH/2)
+  CENTER = round(length/2)
 
-  tileA, tileB = tiles[A], tiles[B]
-  cntA, _ = cv2.findContours(tileA[:,:,3], 0, 1)
-  cntB, _ = cv2.findContours(tileB[:,:,3], 0, 1)
-  cntA, cntB = cntA[0].reshape(-1,2), cntB[0].reshape(-1,2)
-  sumLen = cntA.shape[0] + cntB.shape[0]
+  pieceA, pieceB = pieces[piece1], pieces[piece2]
+  contourA, _ = cv2.findContours(pieceA[:,:,3], 0, 1)
+  contourB, _ = cv2.findContours(pieceB[:,:,3], 0, 1)
+  contourA, contourB = contourA[0].reshape(-1,2), contourB[0].reshape(-1,2)
+  sumLen = contourA.shape[0] + contourB.shape[0]
 
   # Contour matching
-  form_matches = []
-  for i in range(0, cntA.shape[0], STEP_A):
+  contourMatches = []
+  for i in range(0, contourA.shape[0], STEP_A):
 
     # subcontour A and its type
-    subcA = np.roll(cntA, -i, 0)[:LENGTH]
+    subcA = np.roll(contourA, -i, 0)[:length]
     pointA = tuple(np.flip(subcA[CENTER]))
     cA, (hA,wA), aA = cv2.minAreaRect(subcA)
     typepointA = np.int0(np.flip(subcA[0] + subcA[-1] - cA))
-    typeA = tileA[:,:,3][tuple(typepointA)]
+    typeA = pieceA[:,:,3][tuple(typepointA)]
     a = cv2.drawContours(np.zeros((300,300),'uint8'), subcA.reshape(-1,1,2), -1, 255, 1)
 
     # loop through match subcontours
-    for j in range(0, cntB.shape[0], STEP_B):
+    for j in range(0, contourB.shape[0], STEP_B):
       
       # subcontour B and its type
-      subcB = np.roll(cntB, -j, 0)[:LENGTH]
+      subcB = np.roll(contourB, -j, 0)[:length]
       pointB = tuple(np.flip(subcB[CENTER]))
       cB, (hB,wB), aB = cv2.minAreaRect(subcB)
       typepointB = np.int0(np.flip(subcB[0] + subcB[-1] - cB))
-      typeB = tileB[:,:,3][tuple(typepointB)]
+      typeB = pieceB[:,:,3][tuple(typepointB)]
 
       # record good form matches
       if typeB != typeA:
-        if ((abs(hA-hB) < PRECISION) & (abs(wA-wB) < PRECISION)) or ((abs(hA-wB) < PRECISION) & (abs(wA-hB) < PRECISION)):
+        if ((abs(hA-hB) < precision) & (abs(wA-wB) < precision)) or ((abs(hA-wB) < precision) & (abs(wA-hB) < precision)):
           b = cv2.drawContours(np.zeros((300,300),'uint8'), subcB.reshape(-1,1,2), -1, 255, 1)
           fmatch = cv2.matchShapes(a,b,1,0)
           if fmatch < MAX_FORM: 
@@ -212,41 +215,41 @@ def matchTiles(A, B):
               codirect = True if (abs(np.sum(c[:3])) + abs(np.sum(c[-3:]))) == 4 else False
             if not colinear: aB = aB + 90
             if not codirect: aB = aB + 180  
-            form_matches.append([(i, j), pointA, pointB, round(aB-aA,4), round(fmatch,4)])
+            contourMatches.append([(i, j), pointA, pointB, round(aB-aA,4), round(fmatch,4)])
  
   # Color matching
-  color_matches = []
-  for n in range(len(form_matches)):
-    (i, j), pointA, pointB, angle, fmatch = form_matches[n]
-    subcA = np.roll(cntA, -i, 0)[:LENGTH] 
-    subcB = np.roll(cntB, -j, 0)[:LENGTH]
-    colorsA = getColors(tileA, subcA)
-    colorsB = getColors(tileB, subcB)
+  colorMatches = []
+  for n in range(len(contourMatches)):
+    (i, j), pointA, pointB, angle, fmatch = contourMatches[n]
+    subcA = np.roll(contourA, -i, 0)[:length] 
+    subcB = np.roll(contourB, -j, 0)[:length]
+    colorsA = getColors(pieceA, subcA)
+    colorsB = getColors(pieceB, subcB)
     cmatch = fastdtw(colorsA, np.flip(colorsB, axis=0))[0]
     if cmatch < MAX_COLOR: 
-      color_matches.append([(i, j), pointA, pointB, angle, fmatch, round(cmatch)])
+      colorMatches.append([(i, j), pointA, pointB, angle, fmatch, round(cmatch)])
 
   # Pre-fitting
-  fit_matches = []
-  for n in range(len(color_matches)):
-    (i, j), pointA, pointB, angle, fmatch, cmatch = color_matches[n]
-    a = putOnAnvil(canvas_tiles[A][:,:,3], reScale(pointA, [700,700,0]), 0)
-    b = putOnAnvil(canvas_tiles[B][:,:,3], reScale(pointB, [700,700,0]), angle)
+  fitMatches = []
+  for n in range(len(colorMatches)):
+    (i, j), pointA, pointB, angle, fmatch, cmatch = colorMatches[n]
+    a = positionPiece(canvasPieces[piece1][:,:,3], rescale(pointA, [700,700,0]), 0)
+    b = positionPiece(canvasPieces[piece2][:,:,3], rescale(pointB, [700,700,0]), angle)
     loss = 1 - (np.sum((a+b)>0) / (np.sum(a>0) + np.sum(b>0)))
     contours, _ = cv2.findContours((a+b), 0, 1)
     fit = contours[0].shape[0] / sumLen
     if (loss < MAX_PIXEL) & (fit < MAX_FIT): 
-      fit_matches.append([(A, B), (i, j), pointA, pointB, angle, fmatch, cmatch, round(loss+fit,4), 0])
+      fitMatches.append([(piece1, piece2), (i, j), pointA, pointB, angle, fmatch, cmatch, round(loss+fit,4), 0])
 
-  fit_matches.sort(key=lambda n: n[-1])
+  fitMatches.sort(key=lambda n: n[-1])
 
-  return fit_matches
+  return fitMatches
 
 # Calculate all possible matches
 matches = []
-for a in range(len(tiles)-1):
-  for b in range(a+1,len(tiles)):
-    matches.extend(matchTiles(a,b))
+for a in range(len(pieces)-1):
+  for b in range(a+1,len(pieces)):
+    matches.extend(matchPieces(a,b))
 
 # Flip and sort
 for n in range(len(matches)):
@@ -278,8 +281,8 @@ def updateCanvas(canvas, positions, pointA, pointB, angleA, angleB):
   return canvas, positions
 
 # Assembly
-assembly = canvas_tiles[0].copy()
-positions = [[0,0,0]]*len(tiles)
+assembly = canvasPieces[0].copy()
+positions = [[0,0,0]]*len(pieces)
 positions[0] = [700,700,0]
 canvas = [0]
 attempts = 0
@@ -289,29 +292,29 @@ while (len(canvas) < 15) & (attempts < 10):
         
     # take next matching pair
     (A, B), ij, pointA, pointB, angleB, _, _, _, lock = matches[n]
-    pointA = reScale(pointA, positions[A])
-    pointB = reScale(pointB, (700,700,0))
+    pointA = rescale(pointA, positions[A])
+    pointB = rescale(pointB, (700,700,0))
 
     if A in canvas:
       angleA = - positions[A][2]
-      pre_assembly = putOnAnvil(assembly.copy(), pointA, angleA)
+      preAssembly = positionPiece(assembly.copy(), pointA, angleA)
       
       if B not in canvas:
-        newtile = putOnAnvil(canvas_tiles[B], pointB, angleB)
+        newtile = positionPiece(canvasPieces[B], pointB, angleB)
 
         # fix or pass depending on loss of pixels
-        loss = (np.sum(pre_assembly[:,:,3]>0) + np.sum(newtile[:,:,3]>0) - 
-                np.sum((pre_assembly+newtile)[:,:,3]>0)
+        loss = (np.sum(preAssembly[:,:,3]>0) + np.sum(newtile[:,:,3]>0) - 
+                np.sum((preAssembly+newtile)[:,:,3]>0)
                 ) / np.sum(newtile[:,:,3]>0)
         if loss < 0.1: 
           matches[n][-1] = 1
-          assembly = pre_assembly.copy() + newtile.copy()
+          assembly = preAssembly.copy() + newtile.copy()
           canvas, positions = updateCanvas(canvas, positions, 
                                            pointA, pointB, angleA, angleB)
   
   attempts += 1
 
-plot_results(assembly)
+plotResults(assembly)
 
 # Mark matches in original image
 '''
