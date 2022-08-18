@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import math
 from scipy import interpolate
 
-image = cv2.imread('puzzle_data/puzzle4_1.jpg') 
+image = cv2.imread('puzzle_data/puzzle4_2.jpg') 
 
 lap = cv2.Laplacian(image,cv2.CV_64F,ksize=3) 
 lap = np.uint8(np.absolute(lap))

@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
-image = cv2.imread('./puzzle_data/puzzle7_back.jpg')
+image = cv2.imread('./puzzle_data/puzzle4_1.jpg')
 # Convert to graycsale
 img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # Blur the image for better edge detection

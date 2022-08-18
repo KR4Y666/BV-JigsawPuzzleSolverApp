@@ -41,19 +41,10 @@ def remove_background_of(img):
 
     result = cv.bitwise_and(original, original, mask=mask)
     result[mask ==  0] =  255
-    cv.imwrite('bg.jpg', result)
+    plt.imshow(result)
+    plt.show()
 
-    img = Image.open('bg.jpg')
-    img.convert("RGBA")
-    datas = img.getdata()
+    return result
 
-    newData = []
-    for item in datas:
-        if item[0] ==  255  and item[1] ==  255  and item[2] ==  255:
-            newData.append((255, 255, 255, 0))
-        else:
-            newData.append(item)
-
-    img.putdata(newData)
-
-    return np.asarray(img)
+img = cv.imread('./puzzle_data/puzzle4_1.jpg')
+res = remove_background_of(img)
