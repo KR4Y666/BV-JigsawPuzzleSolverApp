@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Puzzle Solver</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+   <div class="container">
+      <div class="puzzleSolver">
+         <div class="disc">
+            <h1>Puzzle Solver</h1>
+         </div>
+         <div class="leftContent">
+            <h2>Either solve the whole puzzle...</h2>
+            <h3>Upload all puzzle pieces of the unsolved puzzle as a picture to get a picture of the assembled puzzle.</h3>
+            <p>(This may take a few seconds...)</p>
+            <form enctype = "multipart/form-data"
+                           action = "save_file.py" method = "post">
+            <h4>Upload picture of all puzzle pieces:</h4>
+            <input type = "file" name = "filename" accept="image/*" class="leftButton">
+            <br>
+            <input type = "submit" value = "Upload" class="leftButton leftSubmitButton">
+            </form>
+         </div>
+      </div>
+      <div class="SIFT">
+         <div class="rightContent">
+            <h2>... or search the position of a particular piece...</h2>
+            <h3>Upload a picture of the solved puzzle (e.g. the picture on the puzzle box) and a picture of a puzzle piece to find out where the puzzle piece belongs.</h3>
+            <p>(This may take a few seconds...)</p>
+            <form enctype = "multipart/form-data"
+                           action = "apply_sift1.py" method = "post">
+            <h4>Upload picture of puzzle piece:</h4>
+            <input type = "file" name = "piece_filename" accept="image/*" class="rightButton">
+            <br>
+            <h4>Upload picture of whole puzzle:</h4>
+            <input type = "file" name = "template_filename" accept="image/*" class="rightButton">
+            <br>
+            <!--<h4>Number of puzzle pieces:</h4>
+            <input type="number" name = "piece_number" min="1" max="1000" value="1" class="numberInput">
+            <br>-->
+            <input type = "submit" value = "Upload" class="rightButton rightSubmitButton">
+            </form>
+         </div>
+      </div>
+
+      <div class="SIFT_2">
+         <div class="bottomContent">
+            <h2>... or search for a particular piece</h2>
+            <h3>Upload a picture of some or all puzzle pieces and a picture of the area of the puzzle template to find out which of the puzzle pieces belongs to that area.</h3>
+            <p>(This may take a few seconds...)</p>
+            <form enctype = "multipart/form-data"
+                           action = "apply_sift2.py" method = "post">
+            <h4>Upload picture of puzzle template area:</h4>
+            <input type = "file" name = "area_filename" accept="image/*" class="bottomButton">
+            <br>
+            <h4>Upload picture of puzzle pieces:</h4>
+            <input type = "file" name = "pieces_filename" accept="image/*" class="bottomButton">
+            <br>
+            <input type = "submit" value = "Upload" class="bottomButton bottomSubmitButton">
+            </form>
+         </div>
+      </div>
+   </div>
+</body>
+</html>
