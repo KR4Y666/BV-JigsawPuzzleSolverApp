@@ -4,9 +4,9 @@ import cv2
 from fastdtw import fastdtw
 from helper import get_colors, choose_piece, rescale, rotate
 
-
+#matching of puzzle tiles
 def match_tiles(A, B, pieces, screen_pieces):
-
+#defining variabels and assinging values
     LENGTH = 160
     PRECISION = 8
     STEP_A = 20
@@ -23,11 +23,11 @@ def match_tiles(A, B, pieces, screen_pieces):
     contourA, contourB = contourA[0].reshape(-1,2), contourB[0].reshape(-1,2)
     sumLen = contourA.shape[0] + contourB.shape[0]
 
-    # Contour matching
+    #initialiazing array for forms
     form_matches = []
     for i in range(0, contourA.shape[0], STEP_A):
 
-      # subcontour A and its type
+      # piece side contour of piece1 and type of contours
       subcontourA = np.roll(contourA, -i, 0)[:LENGTH]
       pointA = tuple(np.flip(subcontourA[CENTER]))
       cA, (hA,wA), aA = cv2.minAreaRect(subcontourA)
@@ -35,7 +35,7 @@ def match_tiles(A, B, pieces, screen_pieces):
       typeA = pieceA[:,:,3][tuple(typespotA)]
       a = cv2.drawContours(np.zeros((300,300),'uint8'), subcontourA.reshape(-1,1,2), -1, 255, 1)
 
-      # loop through match subcontours
+      # piece side contour of piece2 and its type
       for j in range(0, contourB.shape[0], STEP_B):
         
         # subcontour B and its type
@@ -45,7 +45,7 @@ def match_tiles(A, B, pieces, screen_pieces):
         typespotB = np.int0(np.flip(subcontourB[0] + subcontourB[-1] - cB))
         typeB = pieceB[:,:,3][tuple(typespotB)]
 
-        # record good form matches
+         # compute best matches via precision
         if typeB != typeA:
           if ((abs(hA-hB) < PRECISION) & (abs(wA-wB) < PRECISION)) or ((abs(hA-wB) < PRECISION) & (abs(wA-hB) < PRECISION)):
             b = cv2.drawContours(np.zeros((300,300),'uint8'), subcontourB.reshape(-1,1,2), -1, 255, 1)
@@ -61,7 +61,7 @@ def match_tiles(A, B, pieces, screen_pieces):
               if not codirect: aB = aB + 180  
               form_matches.append([(i, j), pointA, pointB, round(aB-aA,4), round(fmatch,4)])
   
-    # Color matching
+    # color matching along piece edges
     color_matches = []
     for n in range(len(form_matches)):
       (i, j), pointA, pointB, angle, fmatch = form_matches[n]
@@ -73,7 +73,7 @@ def match_tiles(A, B, pieces, screen_pieces):
       if cmatch < MAX_COLOR: 
         color_matches.append([(i, j), pointA, pointB, angle, fmatch, round(cmatch)])
 
-    # Pre-fitting
+    # pre fitting of puzzle pieces
     fit_matches = []
     for n in range(len(color_matches)):
       (i, j), pointA, pointB, angle, fmatch, cmatch = color_matches[n]
@@ -90,7 +90,7 @@ def match_tiles(A, B, pieces, screen_pieces):
     return fit_matches
 
 def get_matches(pieces, screen_pieces):
-    # Calculate all possible matches
+     # compute possible matches of all pieces
     matches = []
     for a in range(len(pieces)-1):
         for b in range(a+1,len(pieces)):

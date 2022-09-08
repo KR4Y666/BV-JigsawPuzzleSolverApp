@@ -1,11 +1,10 @@
-# imports
 import numpy as np
 import cv2
 from helper import choose_piece, rescale, rotate
 
 def updateCanvas(screen, locations, pointA, pointB, cornerA, cornerB, B):
     
-    # update records for tiles on canvas
+    # push pieces on "working surface" aka canvas
     for N, pos in enumerate(locations):
       if N in screen:
         new_center = (pos[0] + 700 - pointA[0], pos[1] + 700 - pointA[1])
@@ -22,7 +21,7 @@ def updateCanvas(screen, locations, pointA, pointB, cornerA, cornerB, B):
 
 
 def assemble(puzzle, pieces, screen_pieces, matches, piece_centers):
-  # Assembly
+  # Assemble pieces -> put together
   assembly = screen_pieces[0].copy()
   locations = [[0,0,0]]*len(pieces)
   locations[0] = [700,700,0]

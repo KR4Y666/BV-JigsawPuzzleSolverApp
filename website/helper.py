@@ -3,6 +3,7 @@ import cv2
 from PIL import Image 
 from PIL import ImageChops
 
+#helper to rescale size of puzzle pieces
 def rescale(spot, position, center=(150,150)):
   ci, cj, corner = position
   if corner!=0: (i, j) = rotate(spot, corner, center)
@@ -10,6 +11,7 @@ def rescale(spot, position, center=(150,150)):
 
   return (i + ci - center[0], j + cj - center[1])
 
+#helper to rotate and move pieces
 def rotate(spot, corner, center=(700,700)):
   di, dj = center[0]-spot[0], spot[1]-center[1]
   distance = np.sqrt(np.square(spot[0]-center[0]) + np.square(spot[1]-center[1]))
@@ -20,7 +22,8 @@ def rotate(spot, corner, center=(700,700)):
   j = round(center[1] + distance * np.cos(np.pi * (base + corner)/180))
 
   return (i,j)
-  
+
+#helper to arrange the pieces we are working with  
 def choose_piece(arr_img, spot, corner, center=(700,700)):
   img = Image.fromarray(arr_img)
   img = ImageChops.offset(img, center[1] - spot[1], center[0] - spot[0])
@@ -28,6 +31,7 @@ def choose_piece(arr_img, spot, corner, center=(700,700)):
 
   return np.array(img)
 
+#helper for color matching
 def get_colors(image, puzzlePiece):
   puzzlePiece = np.flip(puzzlePiece)
 
