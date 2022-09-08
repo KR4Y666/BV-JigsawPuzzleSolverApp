@@ -192,6 +192,19 @@ body {
     -webkit-appearance: none;
 }
 
+.numberInput_left {
+    background-color: var(--blue);
+    border-radius: 20px;
+    border: none;
+    padding: 8px;
+    outline: none;
+    text-align: center;
+}
+
+.numberInput_left::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
 h4 {
     margin-bottom: 5px;
     margin-top: 25px;
@@ -199,6 +212,7 @@ h4 {
 
 h5 {
     margin-top: 0px;
+    margin-bottom: 5px;
 }
 
 @media only screen and (max-width: 1155px) {
