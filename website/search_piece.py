@@ -1,21 +1,23 @@
 #! C:\Python\Python310\python.exe
+
+# imports
 import cgi, os
-import cgitb
-from turtle import shape; #cgitb.enable()
 from PIL import Image
 import cv2
 import numpy as np
 from improved_sift import improved_sift
 
+# get fieldstorage
 form = cgi.FieldStorage()
-# Get filename here.
+
+# get filenames
 area = form['area_filename']
 pieces = form['pieces_filename']
 
-# Test if the file was uploaded
+# test if the files were successfully uploaded
 if area.filename and pieces.filename:
-   # strip leading path from file name to avoid
-   # directory traversal attacks
+   
+   # get uploaded images
    area_fn = os.path.basename(area.filename.replace("\\", "/"))
    pieces_fn = os.path.basename(pieces.filename.replace("\\", "/"))
    open(area_fn, 'wb').write(area.file.read())
@@ -24,15 +26,14 @@ if area.filename and pieces.filename:
    area_img = np.asarray(area_img)
    pieces_img = cv2.imread(pieces_fn)
    pieces_img = np.asarray(pieces_img)
-   #piece = np.uint8(piece)
-   #template = np.uint8(template)
-   # piece_img_fn = os.path.basename(piece_img.filename.replace("\\", "/"))
+
+   # use imporved_sift function get result image which puzzle piece belongs to the area
    _,_,_,_,sift_result = improved_sift(area_img, pieces_img)
    Image.fromarray(sift_result).convert("RGB").save('result_img.jpg')
-   message = 'The files "' + area_fn + '" and "' + pieces_fn + '" were uploaded successfully'
+   message = ""
  
 else:
-   message = 'No file was uploaded'
+   message = 'No files were uploaded'
  
 print("Content-Type: text/html")
 print("")
@@ -52,6 +53,7 @@ print("""
 <body>
    <h1>Solved Puzzle</h1>
    <img src="%s">
+   <p>%s</p>
 </body>
 </html>
-""" % ("result_img.jpg"))
+""" % ("result_img.jpg", message))

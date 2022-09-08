@@ -1,31 +1,36 @@
 #! C:\Python\Python310\python.exe
+
+# imports
 import cgi, os
-import cgitb
-from turtle import pu; #cgitb.enable()
 from PIL import Image
 import cv2
 import numpy as np
 from jigsaw_puzzle_solver import puzzle_solver
 
+# get fieldstorage
 form = cgi.FieldStorage()
-# Get filename here.
+
+# get filename
 fileitem = form['filename']
-# Test if the file was uploaded
+piece_number = int(form['piece_number'].value)
+
+# test if the file was successfully uploaded
 if fileitem.filename:
-   # strip leading path from file name to avoid
-   # directory traversal attacks
+   
+   # get uploaded image
    fn = os.path.basename(fileitem.filename.replace("\\", "/"))
    open(fn, 'wb').write(fileitem.file.read())
    img = cv2.imread(fn)
    img = np.asarray(img)
-   result = puzzle_solver(fn)
+
+   # solve puzzle
+   result = puzzle_solver(fn, piece_number)
    Image.fromarray(result).convert("RGB").save('solver_result_img.jpg')
 
-
-   message = 'The file "' + fn + '" was uploaded successfully'
+   message = ""
  
 else:
-   message = 'No file was uploaded'
+   message = 'No files were uploaded'
  
 print("Content-Type: text/html")
 print("")
@@ -45,6 +50,7 @@ print("""
 <body>
    <h1>Solved Puzzle</h1>
    <img src="%s">
+   <p>%s</p>
 </body>
 </html>
-""" % ("solver_result_img.jpg"))
+""" % ("solver_result_img.jpg", message))

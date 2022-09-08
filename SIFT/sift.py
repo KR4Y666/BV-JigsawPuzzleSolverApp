@@ -8,8 +8,8 @@ import math
 from PIL import Image
 
 # Read in Images  
-piece_img_bgr = cv2.imread('./puzzle_data/Puzzle4_2.jpg')       # puzzle piece
-template_img_bgr = cv2.imread('./puzzle_data/Puzzle4_Template.jpg')        # puzzle template
+piece_img_bgr = cv2.imread('./puzzle_data/farfalle1.jpg')       # puzzle piece
+template_img_bgr = cv2.imread('./puzzle_data/farfalle1_transform.jpg')        # puzzle template
 piece_img_gray = cv2.cvtColor(piece_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle piece grayscale
 template_img_gray = cv2.cvtColor(template_img_bgr, cv2.COLOR_BGR2GRAY)      # puzzle template grayscale
 
@@ -58,6 +58,7 @@ mean_y = int(sum(y_coordinate)/len(y_coordinate))
 # Set Match Treshholds
 MIN_MATCH_COUNT = 5
 
+print(len(good))
 # get matches
 if len(good)>MIN_MATCH_COUNT:
     src_pts = np.float32([ keypoints1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
